@@ -13,7 +13,7 @@ sys.path.append(os.path.join(sys.path[0], 'src'))
 
 from src.config import settings
 from src.database.db import Base
-from src.models import Task
+from src.tasks.models import Task
 from src.auth.models import User
 
 

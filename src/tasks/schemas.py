@@ -23,6 +23,7 @@ class TaskCreate(TaskBase):
 class Task(TaskBase):
     id: int
     created_at: datetime.datetime
+    updated_at: datetime.datetime
     is_done: bool
     # author_id: int
     # author: 'User'

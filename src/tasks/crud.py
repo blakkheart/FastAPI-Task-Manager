@@ -1,3 +1,4 @@
+import datetime
 from typing import List
 
 from fastapi import APIRouter
@@ -69,6 +70,7 @@ async def update_task(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND, detail="Task not found")
         task_data = task.model_dump(exclude_unset=True)
+        task_data['updated_at'] = datetime.datetime.utcnow()
         for key, val in task_data.items():
             setattr(db_task, key, val)
         session.add(db_task)
