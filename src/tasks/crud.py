@@ -6,11 +6,12 @@ from fastapi import Depends, HTTPException, Response, status
 from sqlalchemy import and_, insert, select, values, update
 from fastapi_pagination.ext.sqlalchemy import paginate
 from fastapi_pagination import Page, add_pagination
-from database.db import async_session_factory, Base
-from tasks.models import Task
-import tasks.schemas as schemas
-from auth.deps import get_current_user
-from auth.schemas import User
+
+from src.database.db import async_session_factory, Base
+from src.tasks.models import Task
+import src.tasks.schemas as schemas
+from src.auth.deps import get_current_user
+from src.auth.schemas import User
 
 
 router = APIRouter(tags=['tasks'])

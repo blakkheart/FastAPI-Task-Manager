@@ -5,7 +5,7 @@ from typing import Any, Union
 from passlib.context import CryptContext
 from jose import jwt
 
-from config import settings
+from src.config import settings
 
 logging.getLogger('passlib').setLevel(logging.ERROR)
 

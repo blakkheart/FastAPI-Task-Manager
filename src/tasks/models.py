@@ -2,8 +2,9 @@ from typing import Annotated
 import datetime
 
 from sqlalchemy import String, ForeignKey
-from database.db import Base
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
+from src.database.db import Base
 
 
 class Task(Base):
