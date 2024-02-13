@@ -29,7 +29,7 @@ JWT_REFRESH_SECRET_KEY = settings.JWT_REFRESH_SECRET_KEY
 
 async def create_access_token(
     subject: Union[str, Any],
-    expires_delta: int = None
+    expires_delta: datetime.timedelta | None = None
 ) -> str:
     if expires_delta is not None:
         expires_delta = datetime.datetime.utcnow() + expires_delta
@@ -44,7 +44,7 @@ async def create_access_token(
 
 async def create_refresh_token(
     subject: Union[str, Any],
-    expires_delta: int = None
+    expires_delta: datetime.timedelta | None = None
 ) -> str:
     if expires_delta is not None:
         expires_delta = datetime.datetime.utcnow() + expires_delta
