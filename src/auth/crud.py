@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Depends
+from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import insert, select, values, update
 from database.db import async_session_factory
@@ -34,7 +34,9 @@ async def create_user(user: schemas.UserCreate) -> schemas.User:
         db_username = username_result.scalars().all()
         if len(db_username) > 0:
             raise HTTPException(
-                status_code=400, detail="Login is already in use")
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Login is already in use"
+            )
         user_data['password'] = await get_hashed_password(user_data.get('password'))
         db_user = User(**user_data)
         session.add(db_user)
@@ -44,7 +46,8 @@ async def create_user(user: schemas.UserCreate) -> schemas.User:
 
 
 @router.post('/login/')
-async def login_user(form_data: OAuth2PasswordRequestForm = Depends()) -> schemas.Token:
+async def login_user(
+        form_data: OAuth2PasswordRequestForm = Depends()) -> schemas.Token:
     async with async_session_factory() as session:
 
         query = select(User).filter_by(login=form_data.username)
@@ -54,9 +57,14 @@ async def login_user(form_data: OAuth2PasswordRequestForm = Depends()) -> schema
             raise HTTPException(
                 status_code=404, detail="User dosent exist")
         hashed_pass = user_to_login.password
-        if not await verify_password(form_data.password, hashed_pass=hashed_pass):
+        if not await verify_password(
+            form_data.password,
+            hashed_pass=hashed_pass
+        ):
             raise HTTPException(
-                status_code=404, detail="Password is incorrect")
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Password is incorrect"
+            )
         return {
             'access_token': await create_access_token(user_to_login.login),
             'refresh_token': await create_refresh_token(user_to_login.login),
@@ -68,5 +76,6 @@ async def get_user(user_id: int) -> schemas.User:
     async with async_session_factory() as session:
         db_user = await session.get(User, user_id)
         if not db_user:
-            raise HTTPException(status_code=404, detail="User not found")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
         return db_user
