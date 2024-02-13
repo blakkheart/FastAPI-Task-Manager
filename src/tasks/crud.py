@@ -4,7 +4,8 @@ from typing import List
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Response, status
 from sqlalchemy import and_, insert, select, values, update
-
+from fastapi_pagination.ext.sqlalchemy import paginate
+from fastapi_pagination import Page, add_pagination
 from database.db import async_session_factory, Base
 from tasks.models import Task
 import tasks.schemas as schemas
@@ -19,13 +20,26 @@ router = APIRouter(tags=['tasks'])
 async def get_task_list(
     user: User = Depends(get_current_user),
     done: bool = None,
+    limit: int = 100,
+    offset: int = 0,
 ) -> List[schemas.Task]:
     async with async_session_factory() as session:
         if done is None:
-            query = select(Task).where(Task.author_id == user.id)
+            query = (
+                select(Task)
+                .where(Task.author_id == user.id)
+                .order_by(Task.created_at)
+                .limit(limit)
+                .offset(offset)
+            )
         else:
-            query = select(Task).filter(
-                and_(Task.author_id == user.id, Task.is_done == done))
+            query = (
+                select(Task)
+                .filter(and_(Task.author_id == user.id, Task.is_done == done))
+                .order_by(Task.created_at)
+                .limit(limit)
+                .offset(offset)
+            )
         result = await session.execute(query)
         db_tasks = result.scalars().all()
         if not db_tasks:

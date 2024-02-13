@@ -19,9 +19,12 @@ router = APIRouter(tags=['users'])
 
 
 @router.get('/')
-async def get_user_list() -> List[schemas.User]:
+async def get_user_list(
+    limit: int = 100,
+    offset: int = 0,
+) -> List[schemas.User]:
     async with async_session_factory() as session:
-        query = select(User)
+        query = select(User).limit(limit).offset(offset)
         result = await session.execute(query)
         users = result.scalars().all()
         return users
@@ -48,7 +51,7 @@ async def create_user(user: schemas.UserCreate) -> schemas.User:
 
 
 @router.patch('/')
-async def get_user(
+async def patch_user(
     user: schemas.UserUpdate,
     user_auth: User = Depends(get_current_user)
 ) -> schemas.User:
@@ -86,6 +89,11 @@ async def login_user(
             'access_token': await create_access_token(user_to_login.login),
             'refresh_token': await create_refresh_token(user_to_login.login),
         }
+
+
+@router.get('/me/')
+async def get_me(user: User = Depends(get_current_user)) -> schemas.User:
+    return user
 
 
 @router.get('/{user_id}/')

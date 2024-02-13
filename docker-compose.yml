@@ -1,0 +1,24 @@
+version: '3'
+
+volumes:
+  pg_data:
+
+services:
+  db:
+    image: postgres:16.2
+    env_file: ./src/.env
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./
+    env_file: ./src/.env
+    depends_on:
+      - db
+
+  gateway:
+    build: ./gateway/
+    depends_on:
+      - backend
+    ports:
+      - 8001:8001
