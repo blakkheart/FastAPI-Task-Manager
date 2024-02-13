@@ -23,7 +23,6 @@ class User(UserBase):
 
 
 class UserUpdate(BaseModel):
-    password: str
     first_name: Optional[str] = None
     last_name: Optional[str] = None
 

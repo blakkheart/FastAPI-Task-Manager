@@ -1,3 +1,4 @@
+from typing import List
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import insert, select, values, update
@@ -11,13 +12,14 @@ from auth.utils import (
 )
 from auth.models import User
 import auth.schemas as schemas
+from auth.deps import get_current_user
 
 
 router = APIRouter(tags=['users'])
 
 
 @router.get('/')
-async def get_user_list():
+async def get_user_list() -> List[schemas.User]:
     async with async_session_factory() as session:
         query = select(User)
         result = await session.execute(query)
@@ -43,6 +45,21 @@ async def create_user(user: schemas.UserCreate) -> schemas.User:
         await session.commit()
         await session.refresh(db_user)
         return db_user
+
+
+@router.patch('/')
+async def get_user(
+    user: schemas.UserUpdate,
+    user_auth: User = Depends(get_current_user)
+) -> schemas.User:
+    async with async_session_factory() as session:
+        user_data = user.model_dump(exclude_unset=True)
+        for key, val in user_data.items():
+            setattr(user_auth, key, val)
+        session.add(user_auth)
+        await session.commit()
+        await session.refresh(user_auth)
+        return user_auth
 
 
 @router.post('/login/')
