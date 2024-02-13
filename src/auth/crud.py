@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import insert, select, values, update
-from database.db import async_session_factory
 
+from database.db import async_session_factory
 from auth.utils import (
     get_hashed_password,
     verify_password,
