@@ -39,6 +39,36 @@ async def create_task(
         return db_task
 
 
+@router.get('/done_tasks/')
+async def get_all_done_tasks(
+    user: User = Depends(get_current_user)
+) -> List[schemas.Task]:
+    async with async_session_factory() as session:
+        query = select(Task).filter(
+            and_(Task.author_id == user.id, Task.is_done == True))
+        result = await session.execute(query)
+        db_tasks = result.scalars().all()
+        if not db_tasks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tasks not found")
+        return db_tasks
+
+
+@router.get('/not_done_tasks/')
+async def get_all_not_done_tasks(
+    user: User = Depends(get_current_user)
+) -> List[schemas.Task]:
+    async with async_session_factory() as session:
+        query = select(Task).filter(
+            and_(Task.author_id == user.id, Task.is_done == False))
+        result = await session.execute(query)
+        db_tasks = result.scalars().all()
+        if not db_tasks:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND, detail="Tasks not found")
+        return db_tasks
+
+
 @router.get('/{task_id}/')
 async def get_task(
     task_id: int,

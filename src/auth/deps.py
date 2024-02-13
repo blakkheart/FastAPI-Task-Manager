@@ -36,15 +36,9 @@ async def get_current_user(token: str = Depends(reuseable_oauth)) -> SystemUser:
                 detail="Could not validate credentials",
                 headers={"WWW-Authenticate": "Bearer"},
             )
-
-        print('111111111111111111', token_data)
-
         query = select(User).filter_by(login=token_data.sub)
         db_user = await session.execute(query)
         user_to_login = db_user.scalars().all()[0]
-
-        # user = await session.get(token_data.sub, None)
-
         if not user_to_login:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
