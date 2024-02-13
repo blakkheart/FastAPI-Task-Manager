@@ -3,11 +3,9 @@ from typing import List
 
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException, Response, status
-from sqlalchemy import and_, insert, select, values, update
-from fastapi_pagination.ext.sqlalchemy import paginate
-from fastapi_pagination import Page, add_pagination
+from sqlalchemy import and_, select
 
-from src.database.db import async_session_factory, Base
+from src.database.db import async_session_factory
 from src.tasks.models import Task
 import src.tasks.schemas as schemas
 from src.auth.deps import get_current_user
@@ -24,6 +22,12 @@ async def get_task_list(
     limit: int = 100,
     offset: int = 0,
 ) -> List[schemas.Task]:
+    '''
+    Позволяет получать список задач.
+    Пользователи видят только свои задачи.
+    Доступна пагинация через параметры limit и offset.
+    Доступна фильтрация для выполненных задач через параметр done.
+    '''
     async with async_session_factory() as session:
         if done is None:
             query = (
@@ -54,6 +58,7 @@ async def create_task(
     text: schemas.TaskCreate,
     user: User = Depends(get_current_user),
 ) -> schemas.Task:
+    '''Позволяет создавать задачу.'''
     async with async_session_factory() as session:
         db_task = Task(text=text.text, author=user)
         session.add(db_task)
@@ -67,6 +72,7 @@ async def get_task(
     task_id: int,
     user: User = Depends(get_current_user),
 ) -> schemas.Task:
+    '''Позволяет получить конкретную задачу по ее id.'''
     async with async_session_factory() as session:
         query = select(Task).filter(
             and_(Task.id == task_id, Task.author_id == user.id))
@@ -84,6 +90,7 @@ async def update_task(
     task: schemas.TaskUpdate,
     user: User = Depends(get_current_user),
 ) -> schemas.Task:
+    '''Позволяет изменить конкретную задачу по ее id.'''
     async with async_session_factory() as session:
         query = select(Task).filter(
             and_(Task.id == task_id, Task.author_id == user.id))
@@ -107,6 +114,7 @@ async def delete_task(
     task_id: int,
     user: User = Depends(get_current_user),
 ) -> Response:
+    '''Позволяет удалить конкретную задачу по ее id.'''
     async with async_session_factory() as session:
         query = select(Task).filter(
             and_(Task.id == task_id, Task.author_id == user.id))

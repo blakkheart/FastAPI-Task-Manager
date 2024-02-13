@@ -7,30 +7,34 @@ from jose import jwt
 
 from src.config import settings
 
-logging.getLogger('passlib').setLevel(logging.ERROR)
-
-password_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
-
-
-async def get_hashed_password(password: str) -> str:
-    return password_context.hash(password)
-
-
-async def verify_password(password: str, hashed_pass: str) -> bool:
-    return password_context.verify(password, hashed_pass)
-
-
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7
 ALGORITHM = "HS256"
 JWT_SECRET_KEY = settings.JWT_SECRET_KEY
 JWT_REFRESH_SECRET_KEY = settings.JWT_REFRESH_SECRET_KEY
 
+# убираем навязчивый ворнинг от библиотеки passlib,
+# т.к. ее давно не поддерживают
+logging.getLogger('passlib').setLevel(logging.ERROR)
+
+password_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
+
+
+async def get_hashed_password(password: str) -> str:
+    '''Позволяет хеширывать пароль.'''
+    return password_context.hash(password)
+
+
+async def verify_password(password: str, hashed_pass: str) -> bool:
+    '''Позволяет проверить захешированный пароль.'''
+    return password_context.verify(password, hashed_pass)
+
 
 async def create_access_token(
     subject: Union[str, Any],
     expires_delta: datetime.timedelta | None = None
 ) -> str:
+    '''Позволяет создать access токен для пользователя.'''
     if expires_delta is not None:
         expires_delta = datetime.datetime.utcnow() + expires_delta
     else:
@@ -46,6 +50,7 @@ async def create_refresh_token(
     subject: Union[str, Any],
     expires_delta: datetime.timedelta | None = None
 ) -> str:
+    '''Позволяет создать refresh токен для пользователя.'''
     if expires_delta is not None:
         expires_delta = datetime.datetime.utcnow() + expires_delta
     else:

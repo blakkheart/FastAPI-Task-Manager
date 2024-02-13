@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -8,7 +8,7 @@ from pydantic import ValidationError
 
 from src.auth.models import User
 from src.auth.utils import JWT_SECRET_KEY, ALGORITHM
-from src.auth.schemas import TokenPayload, UserCreate, SystemUser
+from src.auth.schemas import TokenPayload, SystemUser
 from src.database.db import async_session_factory
 
 
@@ -18,7 +18,13 @@ reuseable_oauth = OAuth2PasswordBearer(
 )
 
 
-async def get_current_user(token: str = Depends(reuseable_oauth)) -> SystemUser:
+async def get_current_user(
+    token: str = Depends(reuseable_oauth)
+) -> SystemUser:
+    '''
+    Позволяет получать юзера, который делает запрос,
+    а так же проверяет его токен на валидность.
+    '''
     async with async_session_factory() as session:
         try:
             payload = jwt.decode(
@@ -26,7 +32,7 @@ async def get_current_user(token: str = Depends(reuseable_oauth)) -> SystemUser:
             )
             token_data = TokenPayload(**payload)
 
-            if datetime.datetime.fromtimestamp(token_data.exp) < datetime.datetime.now():
+            if datetime.fromtimestamp(token_data.exp) < datetime.now():
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Token expired",

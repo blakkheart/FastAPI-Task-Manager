@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import OAuth2PasswordRequestForm
-from sqlalchemy import insert, select, values, update
+from sqlalchemy import select
 
 from src.database.db import async_session_factory
 from src.auth.utils import (
@@ -23,6 +23,10 @@ async def get_user_list(
     limit: int = 100,
     offset: int = 0,
 ) -> List[schemas.User]:
+    '''
+    Позволяет получить список пользователей.
+    Доступна пагинация через параметры limit и offset.
+    '''
     async with async_session_factory() as session:
         query = select(User).limit(limit).offset(offset)
         result = await session.execute(query)
@@ -32,6 +36,7 @@ async def get_user_list(
 
 @router.post('/')
 async def create_user(user: schemas.UserCreate) -> schemas.User:
+    '''Позволяет регистрировать пользователя.'''
     async with async_session_factory() as session:
         user_data = user.model_dump(exclude_unset=True)
         query = select(User).filter_by(login=user_data.get('login'))
@@ -55,6 +60,7 @@ async def patch_user(
     user: schemas.UserUpdate,
     user_auth: User = Depends(get_current_user)
 ) -> schemas.User:
+    '''Позволяет изменять информацию о пользователе самому пользователю.'''
     async with async_session_factory() as session:
         user_data = user.model_dump(exclude_unset=True)
         for key, val in user_data.items():
@@ -67,9 +73,10 @@ async def patch_user(
 
 @router.post('/login/')
 async def login_user(
-        form_data: OAuth2PasswordRequestForm = Depends()) -> schemas.Token:
+    form_data: OAuth2PasswordRequestForm = Depends()
+) -> schemas.Token:
+    '''Позволяет юзеру получить access и refresh токены.'''
     async with async_session_factory() as session:
-
         query = select(User).filter_by(login=form_data.username)
         db_user = await session.execute(query)
         user_to_login = db_user.scalars().all()[0]
@@ -93,11 +100,13 @@ async def login_user(
 
 @router.get('/me/')
 async def get_me(user: User = Depends(get_current_user)) -> schemas.User:
+    '''Выводит информцию о пользователе, сделавшем запрос.'''
     return user
 
 
 @router.get('/{user_id}/')
 async def get_user(user_id: int) -> schemas.User:
+    '''Выводит информцию о пользователе, выбранном по id.'''
     async with async_session_factory() as session:
         db_user = await session.get(User, user_id)
         if not db_user:

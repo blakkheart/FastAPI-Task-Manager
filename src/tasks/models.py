@@ -1,7 +1,6 @@
-from typing import Annotated
 import datetime
 
-from sqlalchemy import String, ForeignKey
+from sqlalchemy import ForeignKey
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from src.database.db import Base
